@@ -1,3 +1,4 @@
+# manage.py
 #!/usr/bin/env python
 """Django's command-line utility for administrative tasks."""
 import os
@@ -9,7 +10,7 @@ def main():
 
     # Establecer el corredor de pruebas personalizado si el comando es "test"
     if 'test' in sys.argv:
-        os.environ.setdefault('DJANGO_TEST_RUNNER', 'espoltel.testrunner.XMLTestRunner')
+        os.environ.setdefault('DJANGO_TEST_RUNNER', 'testrunner.XMLTestRunner')
         os.makedirs('test-reports', exist_ok=True)
 
     try:
