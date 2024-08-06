@@ -183,4 +183,4 @@ CORS_ALLOW_HEADERS = [
     # Otros encabezados personalizados
 ]
 CORS_ALLOWED_CREDENTIALS = True
-TEST_RUNNER = 'xmlrunner.extra.djangotestrunner.XMLTestRunner'
+TEST_RUNNER = 'custom_testrunner.CustomTestRunner'
