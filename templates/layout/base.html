@@ -1,0 +1,27 @@
+{% load static%}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My First HTML Page</title>
+    <link rel="stylesheet" href= "{% static 'herencia.css' %}">
+</head>
+<body>
+    
+    <nav>
+        <ul>
+            <li><a href="{% url 'herencia' %}">Herencia</a></li>
+            <li><a href="{% url 'hijo1' %}">Hijo1</a></li>
+            <li><a href="{% url 'hijo2' %}">Hijo2</a></li>
+            <li><a href="{% url 'login' %}">Form</a></li>
+        </ul>
+        
+    </nav>
+    <h1>Base.html</h1>
+
+    <main>
+        {% block content %}
+        {% endblock %}
+    </main>
+    {% block scripts %}{%endblock%}
+</body>
+</html>

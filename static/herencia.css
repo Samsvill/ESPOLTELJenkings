@@ -1,0 +1,27 @@
+nav{
+    background-color: rgb(135, 129, 214);
+    color: white;
+    padding: 10px;
+}
+
+main{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+ul{
+    list-style-type: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+ul li {
+    padding: 20px;
+}
+
+ul li a{
+    text-decoration: none;
+    color: rgb(63, 63, 63);
+}

@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Página de Bienvenida</title>
+</head>
+<body>
+    {# olap #}
+    {% comment %}
+    olap
+    olap
+    {% endcomment %}
+
+    <h1>Bienvenido/a {{name}}</h1>
+    <ul>
+        {% for categoria in categorias %}
+            {% if categoria == "num5" %}
+                <li><strong>{{categoria|upper|length}}</strong></li>
+                {% else %}
+                <li>{{categoria}}</li>
+                {% endif %}
+        {% endfor %}
+    </ul>
+    <p>total: {{categorias|length}}</p>
+    <p>¡Gracias por visitarnos!</p>
+</body>
+</html>
