@@ -1,11 +1,10 @@
 from datetime import datetime
-
 from rest_framework import generics, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from .models import Solicitud, Estado, Cotizacion, Formulario, Factura
-from .serializers import SolicitudSerializer, CotizacionSerializer, FormularioSerializer, FacturaSerializer
+from .models import Solicitud, ItemSolicitud, Estado, Cotizacion, Formulario, Factura
+from .serializers import SolicitudSerializer, ItemSolicitudSerializer, CotizacionSerializer, FormularioSerializer, FacturaSerializer
 from proyecto.models import Proyecto
 from user.models import UserProfile
 
@@ -15,7 +14,7 @@ ERROR_MESSAGE = "Fallo en la consulta"
 
 #crear una solicitud de un proyecto YA EXISTENTE y GET de todas las solicitudes
 class SolicitudCreateAPIView(generics.CreateAPIView):
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
     serializer_class = SolicitudSerializer
     def post(self, request, pk):
         try:
@@ -163,7 +162,79 @@ class SolicitudDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
                 "error": str(e)
             }
             return Response(response_data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-    
+
+class ItemSolicitudListCreateAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request, pk_s):
+        try:
+            items = ItemSolicitud.objects.filter(solicitud=pk_s)
+            if items.exists():
+                serializer = ItemSolicitudSerializer(items, many=True)
+                response_data = {
+                    "status": "success",
+                    "message": "Items devueltos con éxito",
+                    "data": serializer.data
+                }
+                return Response(response_data, status=status.HTTP_200_OK)
+            else:
+                response_data = {
+                    "status": "success",
+                    "message": "No hay items creados",
+                    "data": []
+                }
+                return Response(response_data, status=status.HTTP_200_OK)
+        except Exception as e:
+            response_data = {
+                "status": "error",
+                "message": "Fallo en la consulta",
+                "error": str(e)
+            }
+            return Response(response_data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    def post(self, request, pk_s):
+        try:
+            solicitud = Solicitud.objects.get(id=pk_s)
+        except Solicitud.DoesNotExist:
+            response_data = {
+                "status": "error",
+                "message": f"No se encontró la solicitud con id {pk_s}"
+            }
+            return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+        
+        try:
+            items_solicitud_data = request.data.get('items_solicitud', [])
+            errors = []
+            for item_data in items_solicitud_data:
+                item_data['solicitud'] = pk_s
+                serializer = ItemSolicitudSerializer(data=item_data)
+                if serializer.is_valid():
+                    serializer.save()
+                else:
+                    errors.append(serializer.errors)
+            
+            if errors:
+                response_data = {
+                    "status": "error",
+                    "message": "No se pudo crear uno o más items_solicitud",
+                    "errors": errors
+                }
+                return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                response_data = {
+                    "status": "success",
+                    "message": "Items_solicitud creados exitosamente para la solicitud",
+                    "data": {
+                        "solicitud_id": pk_s
+                    }
+                }
+                return Response(response_data, status=status.HTTP_201_CREATED)
+        
+        except Exception as e:
+            response_data = {
+                "status": "error",
+                "message": "No se pudo crear los items_solicitud",
+                "error": str(e)
+            }
+            return Response(response_data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 # PUT del estado de una solicitud
 class EstadoUpdateAPIView(generics.RetrieveUpdateAPIView):
     permission_classes = [IsAuthenticated]
@@ -263,7 +334,7 @@ class CotizacionListCreateAPIView(APIView):
                     "no_coti": cotizacion.no_coti,
                     "monto": str(cotizacion.monto),
                     "fecha_coti": cotizacion.fecha_coti.strftime("%d-%m-%Y") if cotizacion.fecha_coti is not None else None,
-                    "file_coti": cotizacion.file_coti.url if cotizacion.file_coti else None
+                    "url_coti": cotizacion.url_coti if cotizacion.url_coti else None
                 }
                 cotizaciones_data.append(cotizacion_data)
             response_data = {
@@ -306,9 +377,7 @@ class CotizacionListCreateAPIView(APIView):
                 fecha_coti = datetime.strptime(fecha_str, "%d-%m-%Y").date()
                 data['fecha_coti'] = fecha_coti
 
-            file_coti = request.FILES.get('file_coti', None)
-            data['file_coti'] = file_coti if file_coti else None
-
+            
             serializer = CotizacionSerializer(data=data)
             if serializer.is_valid():
                 serializer.save()
@@ -370,86 +439,80 @@ class CotizacionListCreateAPIView(APIView):
         
 class FormularioCreateDetailAPIView(generics.CreateAPIView):
     permission_classes = [AllowAny]
-    serializer_class = SolicitudSerializer
-    def get(self,request,pk_s):
+    serializer_class = FormularioSerializer  # Cambié esto para que use el serializador correcto
+    
+    def get(self, request, pk_s):
         try:
             solicitud = Solicitud.objects.get(id=pk_s)
-            Formulario.objects.filter(solicitud=solicitud)
-            SolicitudSerializer(solicitud, many=True)
+            formularios = Formulario.objects.filter(solicitud=solicitud)
+            if not formularios.exists():
+                raise Formulario.DoesNotExist
             response_data = {
                 "status": "success",
                 "message": "Formularios devueltos con éxito",
-                "formularios": Formulario.objects.filter(solicitud=pk_s).values()
+                "formularios": formularios.values()
             }
             return Response(response_data, status=status.HTTP_200_OK)
         except Solicitud.DoesNotExist:
-            response_data = {
+            return Response({
                 "status": "error",
                 "message": f"No se encontró la solicitud con id {pk_s}"
-            }
-            return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+            }, status=status.HTTP_404_NOT_FOUND)
         except Formulario.DoesNotExist:
-            response_data = {
+            return Response({
                 "status": "error",
                 "message": f"No se encontraron formularios para la solicitud con id {pk_s}"
-            }
-            return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+            }, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
-            response_data = {
+            return Response({
                 "status": "error",
-                "message": ERROR_MESSAGE,
-                "error": str(e),
-            }
-            return Response(response_data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                "message": str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
     def post(self, request, pk_s):
         try:
             solicitud = Solicitud.objects.get(id=pk_s)
-            #usuario = UserProfile.objects.get(user=request.user)
-            #request.data['usuario_creacion'] = usuario.id
             data = request.data.copy()
             data['solicitud'] = solicitud.id
-            file_compra = request.FILES.get('file_compra', None)
-            certi_banco = request.FILES.get('certi_banco', None)
-            data['file_compra'] = file_compra if file_compra else None
-            data['certi_banco'] = certi_banco if certi_banco else None
+            
+            # Asumiendo que estás enviando URLs y no archivos
+            data['url_compra'] = data.get('url_compra')
+            data['url_certi_banco'] = data.get('url_certi_banco')
             
             serializer = FormularioSerializer(data=data)
             if serializer.is_valid():
                 serializer.save()
-                response_data = {
+                return Response({
                     "status": "success",
                     "message": "Formulario creado exitosamente",
                     "data": {
                         "solicitud_id": pk_s,
                         "formulario_id": serializer.data['id']
                     }
-                }
-                return Response(response_data, status=status.HTTP_201_CREATED)
-            else:
-                response_data = {
-                    "status": "error",
-                    "message": "No se pudo crear el formulario, error del serializer",
-                    "errors": serializer.errors
-                }
-                return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+                }, status=status.HTTP_201_CREATED)
+            return Response({
+                "status": "error",
+                "message": "No se pudo crear el formulario, error del serializer",
+                "errors": serializer.errors
+            }, status=status.HTTP_400_BAD_REQUEST)
         except Solicitud.DoesNotExist:
-            response_data = {
+            return Response({
                 "status": "error",
                 "message": f"No se encontró la solicitud con id {pk_s}"
-            }
-            return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+            }, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
-            response_data = {
+            return Response({
                 "status": "error",
-                "message": "No se pudo crear el formulario",
-                "error": str(e)
-            }
-            return Response(response_data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                "message": str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 #GET de todas las solicitudes y POST de una factura por id de la solicitud
 class FacturaCreateListAPIView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticated]
-    serializer_class = SolicitudSerializer
+    serializer_class = FacturaSerializer
+    def get_queryset(self):
+        return Factura.objects.filter(solicitud__id=self.kwargs['pk_s'])
+    
     def get(self, request, pk_s):
         try:
             solicitud = Solicitud.objects.get(id=pk_s)
@@ -480,6 +543,8 @@ class FacturaCreateListAPIView(generics.RetrieveUpdateDestroyAPIView):
                 "error": str(e),
             }
             return Response(response_data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+
     def post(self, request, pk_s):
         try:
             solicitud = Solicitud.objects.get(id=pk_s)
@@ -508,3 +573,39 @@ class FacturaCreateListAPIView(generics.RetrieveUpdateDestroyAPIView):
                 "status": "error",
                 "message": f"No se encontró la solicitud con id {pk_s}"
             }
+
+    def put(self, request, pk_s):
+        try:
+            solicitud = Solicitud.objects.get(id=pk_s)
+            request.data['solicitud'] = solicitud.id
+            factura = self.get_queryset().first()  # Obtén la primera factura asociada a la solicitud
+            if not factura:
+                return Response({
+                    "status": "error",
+                    "message": f"No se encontró ninguna factura asociada a la solicitud con id {pk_s}"
+                }, status=status.HTTP_404_NOT_FOUND)
+            
+            serializer = self.get_serializer(factura, data=request.data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response({
+                    "status": "success",
+                    "message": "Factura actualizada exitosamente",
+                    "data": serializer.data
+                }, status=status.HTTP_200_OK)
+            else:
+                return Response({
+                    "status": "error",
+                    "message": "No se pudo actualizar la factura, error del serializer",
+                    "errors": serializer.errors
+                }, status=status.HTTP_400_BAD_REQUEST)
+        except Solicitud.DoesNotExist:
+            return Response({
+                "status": "error",
+                "message": f"No se encontró la solicitud con id {pk_s}"
+            }, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({
+                "status": "error",
+                "message": str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

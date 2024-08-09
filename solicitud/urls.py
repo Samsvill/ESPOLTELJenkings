@@ -15,4 +15,6 @@ urlpatterns = [
     path('formulario/<int:pk_s>/', views.FormularioCreateDetailAPIView.as_view(), name='crear-formulario'),
 
     path('solicitud/<int:pk_s>/factura/', views.FacturaCreateListAPIView.as_view(), name='crear-detalle-factura'),
+
+    path('solicitudes/<pk_s>/items/', views.ItemSolicitudListCreateAPIView.as_view(), name='crear-items-solicitud'),
 ]
