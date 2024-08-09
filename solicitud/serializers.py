@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Solicitud, Estado, Cotizacion, Formulario, Factura
+from .models import Solicitud, ItemSolicitud, Estado, Cotizacion, Formulario, Factura
 
 class SolicitudSerializer(serializers.ModelSerializer):
     
@@ -21,7 +21,29 @@ class SolicitudSerializer(serializers.ModelSerializer):
         instance.tipo = validated_data.get('tipo', instance.tipo)
         instance.estado = validated_data.get('estado', instance.estado)
         instance.proyecto = validated_data.get('proyecto', instance.proyecto)
-        instance.cotizacion_aceptada = validated_data.get('cotizacion_aceptada', instance.cotizacion) if validated_data.get('cotizacion_aceptada') is not None else None
+        
+        if 'cotizacion_aceptada' in validated_data:
+            instance.cotizacion_aceptada = validated_data.get('cotizacion_aceptada')
+
+        instance.save()
+        return instance
+
+class ItemSolicitudSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ItemSolicitud
+        fields = ['id', 'item', 'solicitud', 'fecha_creacion', 'descripcion', 'cantidad', 'unidad']
+        read_only_fields = ['id', 'fecha_creacion']
+
+    def create(self, validated_data):
+        return ItemSolicitud.objects.create(**validated_data)
+
+    def update(self, instance, validated_data):
+        instance.item = validated_data.get('item', instance.item)
+        instance.solicitud = validated_data.get('solicitud', instance.solicitud)
+        instance.descripcion = validated_data.get('descripcion', instance.descripcion)
+        instance.cantidad = validated_data.get('cantidad', instance.cantidad)
+        instance.unidad = validated_data.get('unidad', instance.unidad)
+        instance.fecha_creacion = validated_data.get('fecha_creacion', instance.fecha_creacion)
         instance.save()
         return instance
 
@@ -43,7 +65,7 @@ class EstadoSerializer(serializers.ModelSerializer):
 class CotizacionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Cotizacion
-        fields = ['id', 'solicitud', 'monto','proveedor','no_coti','monto','file_coti','fecha_coti']
+        fields = ['id', 'solicitud', 'monto','proveedor','no_coti','monto','url_coti','fecha_coti']
         read_only_fields = ['id']
 
     def create(self, validated_data):
@@ -55,7 +77,7 @@ class CotizacionSerializer(serializers.ModelSerializer):
         instance.proveedor = validated_data.get('proveedor', instance.proveedor)
         instance.no_coti = validated_data.get('no_coti', instance.no_coti)
         instance.monto = validated_data.get('monto', instance.monto)
-        instance.file_coti = validated_data.get('file_coti', instance.file_coti)
+        instance.url_coti = validated_data.get('url_coti', instance.url_coti)
         instance.fecha_coti = validated_data.get('fecha_coti', instance.fecha_coti)
         instance.save()
         return instance
@@ -63,25 +85,25 @@ class CotizacionSerializer(serializers.ModelSerializer):
 class FormularioSerializer(serializers.ModelSerializer):
     class Meta:
         model = Formulario
-        fields = ['id',
-                  'solicitud',
-                  'cedula_ruc',
-                  'tipo_compra',
-                  'no_compra',
-                  'file_compra',
-
-                  'tipo_acuerdo',
-                  'forma_pago',
-                  'tipo_pago',
-                  'tiempo',
-                  'certi_banco',
-                  'anticipo',
-
-                  'nombre_banco',
-                  'tipo_cuenta',
-                  'numero_cuenta',
-                  'nombre_cuenta',
-                  'correo',]
+        fields = [
+            'id', 
+            'solicitud', 
+            'cedula_ruc', 
+            'tipo_compra', 
+            'no_compra', 
+            'url_compra', 
+            'tipo_acuerdo', 
+            'forma_pago', 
+            'tipo_pago', 
+            'tiempo', 
+            'url_certi_banco', 
+            'anticipo',
+            'nombre_banco', 
+            'tipo_cuenta', 
+            'numero_cuenta',
+            'nombre_cuenta', 
+            'correo'
+        ]
         read_only_fields = ['id']
 
     def create(self, validated_data):
@@ -91,16 +113,14 @@ class FormularioSerializer(serializers.ModelSerializer):
         instance.solicitud = validated_data.get('solicitud', instance.solicitud)
         instance.cedula_ruc = validated_data.get('cedula_ruc', instance.cedula_ruc)
         instance.tipo_compra = validated_data.get('tipo_compra', instance.tipo_compra)
-        instance.no_compra = validated_data.get('no_compra', instance.no_conmpra)
-        instance.file_compra = validated_data.get('file_compra', instance.file_compra)
-
+        instance.no_compra = validated_data.get('no_compra', instance.no_compra)
+        instance.url_compra = validated_data.get('url_compra', instance.url_compra)
         instance.tipo_acuerdo = validated_data.get('tipo_acuerdo', instance.tipo_acuerdo)
         instance.forma_pago = validated_data.get('forma_pago', instance.forma_pago)
         instance.tipo_pago = validated_data.get('tipo_pago', instance.tipo_pago)
         instance.tiempo = validated_data.get('tiempo', instance.tiempo)
-        instance.certi_banco = validated_data.get('certi_banco', instance.certi_banco)
+        instance.url_certi_banco = validated_data.get('url_certi_banco', instance.url_certi_banco)
         instance.anticipo = validated_data.get('anticipo', instance.anticipo)
-
         instance.nombre_banco = validated_data.get('nombre_banco', instance.nombre_banco)
         instance.tipo_cuenta = validated_data.get('tipo_cuenta', instance.tipo_cuenta)
         instance.numero_cuenta = validated_data.get('numero_cuenta', instance.numero_cuenta)
@@ -108,6 +128,7 @@ class FormularioSerializer(serializers.ModelSerializer):
         instance.correo = validated_data.get('correo', instance.correo)
         instance.save()
         return instance
+
     
 class FacturaSerializer(serializers.ModelSerializer):
     class Meta:

@@ -13,7 +13,7 @@ class Solicitud(models.Model):
     usuario_creacion = models.ForeignKey('user.UserProfile', related_name='solicitudes', on_delete=models.CASCADE)
     estado = models.ForeignKey('Estado', related_name='solicitudes', on_delete=models.CASCADE)
     proyecto = models.ForeignKey('proyecto.Proyecto', related_name='solicitudes', on_delete=models.CASCADE)
-    cotizacion_aceptada = models.ForeignKey('Cotizacion', related_name='solicitudes', on_delete=models.CASCADE, null=True, blank=True, default=None)
+    cotizacion_aceptada = models.ForeignKey('Cotizacion', related_name='solicitudes', on_delete=models.SET_NULL, null=True, blank=True, default=None)
     fecha_creacion = models.DateField(auto_now_add=True)
 
     def __str__(self):
@@ -40,6 +40,22 @@ class Solicitud(models.Model):
         verbose_name = "Solicitud"
         verbose_name_plural = "Solicitudes"
 
+class ItemSolicitud(models.Model):
+    id = models.AutoField(primary_key=True)
+    item = models.ForeignKey('proyecto.BudgetItem', related_name='items', on_delete=models.CASCADE)
+    solicitud = models.ForeignKey('Solicitud', related_name='items', on_delete=models.CASCADE)
+    descripcion = models.CharField(max_length=200)
+    cantidad = models.IntegerField()
+    unidad = models.CharField(max_length=100)
+    fecha_creacion = models.DateField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.descripcion} - {self.cantidad} {self.unidad}"
+    
+    class Meta:
+        verbose_name = "Item solicitud"
+        verbose_name_plural = "Items solicitud"
+
 class Estado(models.Model):
     id = models.AutoField(primary_key=True)
     nombre = models.CharField(max_length=100)
@@ -54,7 +70,7 @@ class Cotizacion(models.Model):
     proveedor = models.CharField(max_length=100, null=True, blank=True, default=None)
     no_coti = models.SmallIntegerField(default=None, null=True, blank=True)
     monto = models.DecimalField(max_digits=10, decimal_places=2)
-    file_coti = models.FileField(upload_to= f'cotis/{datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}', default=None, null=True, blank=True)
+    url_coti = models.URLField(null=True, blank=True, default=None)
     fecha_coti = models.DateField(default=None, null=True, blank=True)
 
     def __str__(self):
@@ -70,13 +86,13 @@ class Formulario(models.Model):
     cedula_ruc = models.CharField(max_length=13)
     tipo_compra = models.CharField(max_length=100, null=True, blank=True, default=None)
     no_compra = models.CharField(max_length=100, null=True, blank=True, default=None)
-    file_compra = models.FileField(upload_to=f'contr-fac/{datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}', null=True, blank=True, default=None)
+    url_compra = models.URLField(null=True, blank=True, default=None)
 
     tipo_acuerdo = models.CharField(max_length=100, null=True, blank=True, default=None)
     forma_pago = models.CharField(max_length=100, null=True, blank=True, default=None)
     tipo_pago = models.CharField(max_length=100, null=True, blank=True, default=None)
     tiempo = models.SmallIntegerField(null=True, blank=True, default=None)
-    certi_banco = models.FileField(upload_to=f'certificados/{datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}', null=True, blank=True, default=None)
+    url_certi_banco = models.URLField(null=True, blank=True, default=None)
     anticipo = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, default=None)
 
     nombre_banco = models.CharField(max_length=100, null=True, blank=True, default=None)
@@ -94,7 +110,7 @@ class Factura(models.Model):
     id = models.AutoField(primary_key=True)
     solicitud = models.ForeignKey('Solicitud', related_name='factura', on_delete=models.CASCADE)
     estado = models.CharField(max_length=100)
-    monto = models.DecimalField(max_digits=10, decimal_places=2)
+    monto = models.DecimalField(max_digits=10, decimal_places=5)
     comentario = models.CharField(max_length=200, null=True, blank=True, default=None)
     
     def __str__(self):

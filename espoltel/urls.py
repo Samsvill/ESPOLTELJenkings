@@ -22,6 +22,7 @@ from .views import download_file
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 urlpatterns = [
+    path('', views.home, name='home'),
     path('admin/', admin.site.urls),
     path('api/', include('solicitud.urls')),
     

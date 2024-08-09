@@ -1,0 +1,15 @@
+No se ha iniciado
+Hemos recibido su solicitud y la misma ha sido remitida al departamento de compras. Pronto se atenderá su solicitud.
+
+Cotizando
+Sus requerimientos están siendo cotizados. Hasta el momento, hemos contactado con varios proveedores y estamos esperando recibir sus cotizaciones  Cotizado
+Seleccione la cotización deseada
+
+Compra aprobada
+La compra ha sido aprobada por Gerencia, y actualmente, el departamento de compras está en proceso de negociación con la opción elegida.
+
+Comprado
+El producto/servicio ha sido adquirido con éxito por el departamento de compras.
+
+Pagado
+Su solicitud ha sido procesada y pagada al proveedor. Ahora, estamos a la espera de que su compra sea entregada. ¿Ha recibido su compra?

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Proyecto, BudgetItem, ItemSolicitud
+from .models import Proyecto, BudgetItem
 
 class BudgetItemSerializer(serializers.ModelSerializer):
     class Meta:
@@ -55,21 +55,3 @@ class ProyectoSerializer(serializers.ModelSerializer):
                     item.save()
         return instance
 
-class ItemSolicitudSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ItemSolicitud
-        fields = ['id', 'item', 'solicitud', 'fecha_creacion', 'descripcion', 'cantidad', 'unidad']
-        read_only_fields = ['id', 'fecha_creacion']
-
-    def create(self, validated_data):
-        return ItemSolicitud.objects.create(**validated_data)
-
-    def update(self, instance, validated_data):
-        instance.item = validated_data.get('item', instance.item)
-        instance.solicitud = validated_data.get('solicitud', instance.solicitud)
-        instance.descripcion = validated_data.get('descripcion', instance.descripcion)
-        instance.cantidad = validated_data.get('cantidad', instance.cantidad)
-        instance.unidad = validated_data.get('unidad', instance.unidad)
-        instance.fecha_creacion = validated_data.get('fecha_creacion', instance.fecha_creacion)
-        instance.save()
-        return instance
