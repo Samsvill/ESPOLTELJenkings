@@ -90,7 +90,6 @@ class RoleDestroy(generics.RetrieveDestroyAPIView):
     def delete(self, request, *args, **kwargs):
         role_id = kwargs.get('pk')
         role = get_object_or_404(Role, pk=role_id)
-        print(f"Deleting role: {role} with id: {role_id}")
         self.perform_destroy(role)
         return Response(status=status.HTTP_204_NO_CONTENT)
 

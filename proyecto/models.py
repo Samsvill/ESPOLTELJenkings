@@ -15,7 +15,7 @@ class BudgetItem(models.Model):
 
 class Proyecto(models.Model):
     id = models.AutoField(primary_key=True)
-    nombre = models.CharField(max_length=200, default='Nuevo Proyecto')
+    nombre = models.CharField(max_length=200, unique=True)
     fecha_creacion = models.DateField(auto_now_add=True)
     project_budget = models.IntegerField()
 
