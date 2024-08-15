@@ -168,17 +168,21 @@ class UpdateNonExistingProjectViewTest(APITestCase):
         set_test_user(self)
         self.role = Role.objects.create(description='PM')
         self.user_role = UserRole.objects.create(user=self.user, role=self.role)
+        print(self.client.get(reverse('proyectos-all')).data)
         self.project = Proyecto.objects.create(nombre='Proyecto prueba',
                 project_budget=10000)
+        print(self.client.get(reverse('proyectos-all')).data)
 
     def test_update_project(self):
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + self.access_token)
-        url = reverse('proyecto-detail', kwargs={'pk': 10})
+        url = reverse('proyecto-detail', kwargs={'pk': 9})
         data = {'nombre': 'Proyecto prueba, nuevo',
                 'project_budget': 12000,
                 'budget_items': []}
         response = self.client.put(url, data, format='json')
+        print(self.client.get(reverse('proyectos-all')).data)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        
         self.client.credentials()
 
 # TC-601 POST request with valid project id and budget item name
@@ -329,7 +333,6 @@ class CreateSolicitudViewTest(APITestCase):
             "proyecto": self.project.id
         }
         response = self.client.post(url, data, format='json')
-        print(response.data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.client.credentials()
 
@@ -368,19 +371,42 @@ class InvalidCotizacionUpdateSolicitudViewTest(APITestCase):
                 tema='Probando',
                 tipo='Compra',
                 estado=self.estado,
-                proyecto=self.project)
+                proyecto=self.project,
+                usuario_creacion=self.user_profile)
 
     def test_update_solicitud(self):
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + self.access_token)
-        url = reverse('solicitud-detail', kwargs={'pk': self.solicitud.id})
+        url = reverse('detalle-solicitud', kwargs={'pk': self.solicitud.id})
         data = {
             "nombre": "Solicitud de prueba",
             "tema": "Probando",
             "tipo": "Compra",
             "estado": self.estado.id,
             "proyecto": self.project.id,
-            #"cotizacion": 100
+            "cotizacion_aceptada": 100
         }
         response = self.client.put(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         self.client.credentials()
+
+#TC-704 POST request to create a solicitud with no jwt token provided
+class CreateSolicitudWithoutTokenViewTest(APITestCase):
+    def setUp(self):
+        set_test_user(self)
+        self.role = Role.objects.create(description='PM')
+        self.user_role = UserRole.objects.create(user=self.user, role=self.role)
+        self.estado = Estado.objects.create(nombre='En revisión')
+        self.project = Proyecto.objects.create(nombre='Proyecto prueba',
+                project_budget=10000)
+
+    def test_create_solicitud(self):
+        url = reverse('crear-solicitud', kwargs={'pk': self.project.id})
+        data = {
+            "nombre": "Solicitud de prueba",
+            "tema": "Probando",
+            "tipo": "Compra",
+            "estado": self.estado.id,
+            "proyecto": self.project.id
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)

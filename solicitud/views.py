@@ -20,6 +20,7 @@ class SolicitudCreateAPIView(generics.CreateAPIView):
         try:
             proyecto = Proyecto.objects.get(id=pk)
             usuario = UserProfile.objects.get(user=request.user)
+            usuario_modi = UserProfile.objects.get(user=request.user)
         except Proyecto.DoesNotExist:
             response_data = {
                 "status": "error",
@@ -30,6 +31,7 @@ class SolicitudCreateAPIView(generics.CreateAPIView):
         try:
             request.data['proyecto'] = proyecto.id
             request.data['usuario_creacion'] = usuario.id
+            request.data['usuario_modificacion'] = usuario_modi.id
             serializer = SolicitudSerializer(data=request.data)
             if serializer.is_valid():
                 serializer.save()
@@ -131,9 +133,34 @@ class SolicitudDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     def put(self, request, pk):
         try:
             solicitud = Solicitud.objects.get(id=pk)
-            coti_nueva = Cotizacion.objects.get(id=request.data['cotizacion_aceptada'])
-            solicitud.cotizacion_aceptada = coti_nueva
-            serializer = SolicitudSerializer(solicitud, data= request.data, partial=True)
+            usuario_modi = UserProfile.objects.get(user=request.user)
+            cotizacion_aceptada = request.data.get('cotizacion_aceptada')
+            coti_nueva = Cotizacion.objects.get(id=cotizacion_aceptada) 
+            if not cotizacion_aceptada:
+                response_data = {
+                    "status": "error",
+                    "message": "Se necesita un valor 'cotizacion_aceptada' para realizar la actualización"
+                }
+                return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+        except Solicitud.DoesNotExist:
+            response_data = {
+                "status": "error",
+                "message": f"No se encontró la solicitud con id {pk}"
+            }
+            return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+        except Cotizacion.DoesNotExist:
+            response_data = {
+                "status": "error",
+                "message": f"No se encontró la cotización con id {cotizacion_aceptada}"
+            }
+            return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+
+        try:
+            data = request.data.copy()
+            data['cotizacion_aceptada'] = coti_nueva.id
+            data['usuario_modificacion'] = usuario_modi.id
+            serializer = SolicitudSerializer(solicitud, data=data, partial=True)
+
             if serializer.is_valid():
                 serializer.save()
                 response_data = {
@@ -149,12 +176,7 @@ class SolicitudDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
                     "errors": serializer.errors
                 }
                 return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-        except Solicitud.DoesNotExist:
-            response_data = {
-                "status": "error",
-                "message": f"No se encontró la solicitud con id {pk}"
-            }
-            return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+    
         except Exception as e:
             response_data = {
                 "status": "error",
@@ -162,7 +184,6 @@ class SolicitudDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
                 "error": str(e)
             }
             return Response(response_data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
 class ItemSolicitudListCreateAPIView(APIView):
     permission_classes = [IsAuthenticated]
     def get(self, request, pk_s):

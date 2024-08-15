@@ -5,7 +5,7 @@ class SolicitudSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Solicitud
-        fields = ['id', 'codigo', 'nombre', 'tema', 'tipo', 'estado', 'fecha_creacion', 'proyecto', 'cotizacion_aceptada','usuario_creacion']
+        fields = ['id', 'codigo', 'nombre', 'tema', 'tipo', 'estado', 'fecha_creacion', 'proyecto', 'cotizacion_aceptada','usuario_creacion', 'usuario_modificacion']
         read_only_fields = ['id', 'fecha_creacion', 'codigo']
 
     cotizacion_aceptada = serializers.PrimaryKeyRelatedField(

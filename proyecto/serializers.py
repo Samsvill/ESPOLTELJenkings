@@ -24,7 +24,7 @@ class ProyectoSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Proyecto
-        fields = ['id', 'nombre', 'fecha_creacion', 'project_budget', 'budget_items']
+        fields = ['id', 'nombre', 'fecha_creacion', 'usuario_creacion', 'project_budget', 'budget_items']
         read_only_fields = ['id', 'fecha_creacion']
 
     def create(self, validated_data):

@@ -18,6 +18,7 @@ class Proyecto(models.Model):
     nombre = models.CharField(max_length=200, unique=True)
     fecha_creacion = models.DateField(auto_now_add=True)
     project_budget = models.IntegerField()
+    usuario_creacion = models.ForeignKey('auth.User', related_name='proyectos', on_delete=models.CASCADE)
 
     def __str__(self):
         return f"{self.nombre} - creado el {self.fecha_creacion}"

@@ -11,6 +11,7 @@ class Solicitud(models.Model):
     tema = models.CharField(max_length=100)
     tipo = models.CharField(max_length=100)
     usuario_creacion = models.ForeignKey('user.UserProfile', related_name='solicitudes', on_delete=models.CASCADE)
+    usuario_modificacion = models.ForeignKey('user.UserProfile', related_name='solicitudes_modificadas', on_delete=models.CASCADE)
     estado = models.ForeignKey('Estado', related_name='solicitudes', on_delete=models.CASCADE)
     proyecto = models.ForeignKey('proyecto.Proyecto', related_name='solicitudes', on_delete=models.CASCADE)
     cotizacion_aceptada = models.ForeignKey('Cotizacion', related_name='solicitudes', on_delete=models.SET_NULL, null=True, blank=True, default=None)
@@ -21,7 +22,6 @@ class Solicitud(models.Model):
 
     def save(self, *args, **kwargs):
         self.codigo = self.generate_codigo(self.proyecto.nombre, self.proyecto)
-        print(f"Generando código: {self.codigo}")  # Log del código generado
         super().save(*args, **kwargs)
 
     def generate_codigo(self, nombre, proyecto):
@@ -114,7 +114,7 @@ class Factura(models.Model):
     comentario = models.CharField(max_length=200, null=True, blank=True, default=None)
     
     def __str__(self):
-        return f"{self.no_factura} - {self.monto}"
+        return f"Factura {self.id} - Monto: {self.monto}"
     class Meta:
         verbose_name = "Factura"
         verbose_name_plural = "Facturas"

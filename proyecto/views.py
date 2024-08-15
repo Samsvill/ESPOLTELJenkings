@@ -3,7 +3,6 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from .models import Proyecto, BudgetItem
-from solicitud.models import Solicitud
 from .serializers import ProyectoSerializer, BudgetItemSerializer
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.shortcuts import get_object_or_404
@@ -12,7 +11,7 @@ class ProyectoListCreateAPIView(APIView):
     permission_classes = [IsAuthenticated]
     def get(self, request):
         try:
-            proyectos = Proyecto.objects.all()
+            proyectos = Proyecto.objects.filter(usuario_creacion=request.user)
             if proyectos.exists():
                 serializer = ProyectoSerializer(proyectos, many=True)
                 response_data = {
@@ -24,7 +23,7 @@ class ProyectoListCreateAPIView(APIView):
             else:
                 response_data = {
                     "status": "success",
-                    "message": "No hay proyectos creados",
+                    "message": "No hay proyectos creados por el usuario",
                     "data": []
                 }
                 return Response(response_data, status=status.HTTP_200_OK)
@@ -38,7 +37,9 @@ class ProyectoListCreateAPIView(APIView):
 
     def post(self, request):
         try:
-            serializer = ProyectoSerializer(data=request.data)
+            data = request.data.copy()
+            data['usuario_creacion'] = request.user.id
+            serializer = ProyectoSerializer(data=data)
             if serializer.is_valid():
                 proyecto = serializer.save()
                 response_data = {
@@ -52,7 +53,7 @@ class ProyectoListCreateAPIView(APIView):
             else:
                 response_data = {
                     "status": "error",
-                    "message": "No se pudo crear el proyecto",
+                    "message": "No se pudo crear el proyecto, error del serializer",
                     "errors": serializer.errors
                 }
                 return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
@@ -177,4 +178,30 @@ class BudgetItemDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     queryset = BudgetItem.objects.all()
     serializer_class = BudgetItemSerializer
 
-#GET y POST de los items de una solicitud por id
+class ProyectoGetAllAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        try:
+            proyectos = Proyecto.objects.all()
+            if proyectos.exists():
+                serializer = ProyectoSerializer(proyectos, many=True)
+                response_data = {
+                    "status": "success",
+                    "message": "Proyectos devueltos con éxito",
+                    "data": serializer.data
+                }
+                return Response(response_data, status=status.HTTP_200_OK)
+            else:
+                response_data = {
+                    "status": "success",
+                    "message": "No hay proyectos creados",
+                    "data": []
+                }
+                return Response(response_data, status=status.HTTP_200_OK)
+        except Exception as e:
+            response_data = {
+                "status": "error",
+                "message": "Fallo en la consulta",
+                "error": str(e)
+            }
+            return Response(response_data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
