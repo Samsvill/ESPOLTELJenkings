@@ -6,7 +6,7 @@ urlpatterns = [
     path('solicitudes/<int:pk>/', views.SolicitudDetailAPIView.as_view(), name='detalle-solicitud'),
     path('solicitudes/', views.SolicitudByUserAPIView.as_view(), name='solicitudes-usuario'),
 
-    path('solicitudes/<int:pk>/cotizaciones/', views.CotizacionListCreateAPIView.as_view(), name='cotizaciones-solicitud'),
+    path('solicitudes/<int:pk>/cotizaciones/', views.CotizacionListCreateDeleteAPIView.as_view(), name='cotizaciones-solicitud'),
 
     path('proyectos/<int:pk>/solicitud/', views.SolicitudCreateAPIView.as_view(), name='crear-solicitud'),
     path('proyecto/<int:pk_p>/<int:pk_s>/estado/', views.EstadoListAPIView.as_view(), name='estado-solicitud'),

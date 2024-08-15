@@ -338,7 +338,7 @@ class EstadoListAPIView(generics.RetrieveUpdateAPIView):
             return Response(response_data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
 #GET y POST de cotizaciones de una solicitud
-class CotizacionListCreateAPIView(APIView):
+class CotizacionListCreateDeleteAPIView(APIView):
     permission_classes = [IsAuthenticated]
     serializer_class = SolicitudSerializer
     def get(self, request, pk):
@@ -459,7 +459,7 @@ class CotizacionListCreateAPIView(APIView):
     
         
 class FormularioCreateDetailAPIView(generics.CreateAPIView):
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
     serializer_class = FormularioSerializer  # Cambié esto para que use el serializador correcto
     
     def get(self, request, pk_s):
@@ -527,7 +527,7 @@ class FormularioCreateDetailAPIView(generics.CreateAPIView):
                 "message": str(e)
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-#GET de todas las solicitudes y POST de una factura por id de la solicitud
+#GET de todas las solicitudes y POST de una factura por id de la solicitud y PUT 
 class FacturaCreateListAPIView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = FacturaSerializer
@@ -594,6 +594,15 @@ class FacturaCreateListAPIView(generics.RetrieveUpdateDestroyAPIView):
                 "status": "error",
                 "message": f"No se encontró la solicitud con id {pk_s}"
             }
+            return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            response_data = {
+                "status": "error",
+                "message": "No se pudo crear la factura",
+                "error": str(e)
+            }
+            return Response(response_data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
 
     def put(self, request, pk_s):
         try:

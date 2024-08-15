@@ -9,7 +9,7 @@ from .serializers import ProyectoSerializer, BudgetItemSerializer
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.shortcuts import get_object_or_404
 
-class ProyectoListCreateAPIView(APIView):
+class ProyectoListCreateByUserAPIView(APIView):
     permission_classes = [IsAuthenticated]
     def get(self, request):
         try:
@@ -246,6 +246,13 @@ class ProyectoDetailAPIView(APIView):
                 "message": f"No se encontró el proyecto con id {pk}"
             }
             return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            response_data = {
+                "status": "error",
+                "message": "No se pudo eliminar el proyecto",
+                "error": str(e)
+            }
+            return Response(response_data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 #para un futuro detail del item de un proyecto, por ahora muestra todos
 class BudgetItemDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
