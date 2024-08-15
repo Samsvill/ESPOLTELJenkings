@@ -38,7 +38,7 @@ class ProyectoListCreateAPIView(APIView):
     def post(self, request):
         try:
             data = request.data.copy()
-            data['usuario_creacion'] = request.user.id
+            data['usuario_creacion'] = request.user
             serializer = ProyectoSerializer(data=data)
             if serializer.is_valid():
                 proyecto = serializer.save()

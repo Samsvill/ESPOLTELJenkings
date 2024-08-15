@@ -115,7 +115,7 @@ class CreateProjectWithExistingNameViewTest(APITestCase):
         set_test_user(self)
         self.role = Role.objects.create(description='PM')
         self.user_role = UserRole.objects.create(user=self.user, role=self.role)
-        self.project = Proyecto.objects.create(nombre='Proyecto prueba',
+        self.project = Proyecto.objects.create(usuario_creacion = self.user_profile, nombre='Proyecto prueba',
                 project_budget=10000)
 
     def test_create_project(self):
@@ -149,7 +149,7 @@ class UpdateProjectViewTest(APITestCase):
         set_test_user(self)
         self.role = Role.objects.create(description='PM')
         self.user_role = UserRole.objects.create(user=self.user, role=self.role)
-        self.project = Proyecto.objects.create(nombre='Proyecto prueba',
+        self.project = Proyecto.objects.create(usuario_creacion = self.user_profile, nombre='Proyecto prueba',
                 project_budget=10000)
 
     def test_update_project(self):
@@ -159,6 +159,7 @@ class UpdateProjectViewTest(APITestCase):
                 'project_budget': 12000,
                 'budget_items': []}
         response = self.client.put(url, data, format='json')
+        print(response.data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.client.credentials()
 
@@ -168,10 +169,8 @@ class UpdateNonExistingProjectViewTest(APITestCase):
         set_test_user(self)
         self.role = Role.objects.create(description='PM')
         self.user_role = UserRole.objects.create(user=self.user, role=self.role)
-        print(self.client.get(reverse('proyectos-all')).data)
-        self.project = Proyecto.objects.create(nombre='Proyecto prueba',
+        self.project = Proyecto.objects.create(usuario_creacion = self.user_profile, nombre='Proyecto prueba',
                 project_budget=10000)
-        print(self.client.get(reverse('proyectos-all')).data)
 
     def test_update_project(self):
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + self.access_token)
@@ -180,9 +179,8 @@ class UpdateNonExistingProjectViewTest(APITestCase):
                 'project_budget': 12000,
                 'budget_items': []}
         response = self.client.put(url, data, format='json')
-        print(self.client.get(reverse('proyectos-all')).data)
+        print(response.data)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-        
         self.client.credentials()
 
 # TC-601 POST request with valid project id and budget item name
@@ -191,7 +189,7 @@ class CreateBudgetItemViewTest(APITestCase):
         set_test_user(self)
         self.role = Role.objects.create(description='PM')
         self.user_role = UserRole.objects.create(user=self.user, role=self.role)
-        self.project = Proyecto.objects.create(nombre='Proyecto prueba',
+        self.project = Proyecto.objects.create(usuario_creacion = self.user_profile, nombre='Proyecto prueba',
                 project_budget=10000)
 
     def test_create_budget_item(self):
@@ -214,7 +212,7 @@ class CreateMultipleBudgetItemsViewTest(APITestCase):
         set_test_user(self)
         self.role = Role.objects.create(description='PM')
         self.user_role = UserRole.objects.create(user=self.user, role=self.role)
-        self.project = Proyecto.objects.create(nombre='Proyecto prueba',
+        self.project = Proyecto.objects.create(usuario_creacion = self.user_profile, nombre='Proyecto prueba',
                 project_budget=10000)
 
     def test_create_budget_item(self):
@@ -265,7 +263,7 @@ class CreateBudgetItemWithoutNameViewTest(APITestCase):
         set_test_user(self)
         self.role = Role.objects.create(description='PM')
         self.user_role = UserRole.objects.create(user=self.user, role=self.role)
-        self.project = Proyecto.objects.create(nombre='Proyecto prueba',
+        self.project = Proyecto.objects.create(usuario_creacion = self.user_profile, nombre='Proyecto prueba',
                 project_budget=10000)
 
     def test_create_budget_item(self):
@@ -293,7 +291,7 @@ class CreateBudgetItemWithoutTokenViewTest(APITestCase):
         set_test_user(self)
         self.role = Role.objects.create(description='PM')
         self.user_role = UserRole.objects.create(user=self.user, role=self.role)
-        self.project = Proyecto.objects.create(nombre='Proyecto prueba',
+        self.project = Proyecto.objects.create(usuario_creacion = self.user_profile, nombre='Proyecto prueba',
                 project_budget=10000)
 
     def test_create_budget_item(self):
@@ -318,7 +316,7 @@ class CreateSolicitudViewTest(APITestCase):
         set_test_user(self)
         self.role = Role.objects.create(description='PM')
         self.user_role = UserRole.objects.create(user=self.user, role=self.role)
-        self.project = Proyecto.objects.create(nombre='Proyecto prueba',
+        self.project = Proyecto.objects.create(usuario_creacion = self.user_profile, nombre='Proyecto prueba',
                 project_budget=10000)
         self.estado = Estado.objects.create(nombre='En revisión')
 
@@ -365,7 +363,9 @@ class InvalidCotizacionUpdateSolicitudViewTest(APITestCase):
         self.role = Role.objects.create(description='PM')
         self.user_role = UserRole.objects.create(user=self.user, role=self.role)
         self.estado = Estado.objects.create(nombre='En revisión')
-        self.project = Proyecto.objects.create(nombre='Proyecto prueba',
+        self.project = Proyecto.objects.create(usuario_creacion = self.user_profile,
+                                               #usuario_modificacion = self.user,
+                                               nombre='Proyecto prueba',
                 project_budget=10000)
         self.solicitud = Solicitud.objects.create(nombre='Solicitud de prueba',
                 tema='Probando',
@@ -396,7 +396,7 @@ class CreateSolicitudWithoutTokenViewTest(APITestCase):
         self.role = Role.objects.create(description='PM')
         self.user_role = UserRole.objects.create(user=self.user, role=self.role)
         self.estado = Estado.objects.create(nombre='En revisión')
-        self.project = Proyecto.objects.create(nombre='Proyecto prueba',
+        self.project = Proyecto.objects.create(usuario_creacion = self.user_profile, nombre='Proyecto prueba',
                 project_budget=10000)
 
     def test_create_solicitud(self):
