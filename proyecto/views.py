@@ -2,6 +2,8 @@ from rest_framework import generics
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+
+from user.models import UserProfile
 from .models import Proyecto, BudgetItem
 from .serializers import ProyectoSerializer, BudgetItemSerializer
 from rest_framework.permissions import IsAuthenticated, AllowAny
@@ -38,7 +40,7 @@ class ProyectoListCreateAPIView(APIView):
     def post(self, request):
         try:
             data = request.data.copy()
-            data['usuario_creacion'] = request.user
+            data['usuario_creacion'] = UserProfile.objects.get(user=request.user).id
             serializer = ProyectoSerializer(data=data)
             if serializer.is_valid():
                 proyecto = serializer.save()
@@ -168,9 +170,82 @@ class BudgetItemCreateAPIView(APIView):
             }
             return Response(response_data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
-class ProyectoDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Proyecto.objects.all()
-    serializer_class = ProyectoSerializer
+class ProyectoDetailAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request, pk):
+        try:
+            proyecto = Proyecto.objects.get(id=pk)
+            serializer = ProyectoSerializer(proyecto)
+            response_data = {
+                "status": "success",
+                "message": "Proyecto devuelto con éxito",
+                "data": serializer.data
+            }
+            return Response(response_data, status=status.HTTP_200_OK)
+        except Proyecto.DoesNotExist:
+            response_data = {
+                "status": "error",
+                "message": f"No se encontró el proyecto con id {pk}"
+            }
+            return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            response_data = {
+                "status": "error",
+                "message": "Fallo en la consulta",
+                "error": str(e)
+            }
+            return Response(response_data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def put(self, request, pk):
+        try:
+            proyecto = Proyecto.objects.get(id=pk)
+            serializer = ProyectoSerializer(proyecto, data=request.data, partial=True)
+            if serializer.is_valid():
+                proyecto = serializer.save()
+                response_data = {
+                    "status": "success",
+                    "message": "Proyecto actualizado exitosamente",
+                    "data": {
+                        "id": proyecto.id
+                    }
+                }
+                return Response(response_data, status=status.HTTP_200_OK)
+            else:
+                response_data = {
+                    "status": "error",
+                    "message": "No se pudo actualizar el proyecto, error del serializer",
+                    "errors": serializer.errors
+                }
+                return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+        except Proyecto.DoesNotExist:
+            response_data = {
+                "status": "error",
+                "message": f"No se encontró el proyecto con id {pk}"
+            }
+            return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            response_data = {
+                "status": "error",
+                "message": "No se pudo actualizar el proyecto",
+                "error": str(e)
+            }
+            return Response(response_data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def delete(self, request, pk):
+        try:
+            proyecto = Proyecto.objects.get(id=pk)
+            proyecto.delete()
+            response_data = {
+                "status": "success",
+                "message": "Proyecto eliminado exitosamente"
+            }
+            return Response(response_data, status=status.HTTP_200_OK)
+        except Proyecto.DoesNotExist:
+            response_data = {
+                "status": "error",
+                "message": f"No se encontró el proyecto con id {pk}"
+            }
+            return Response(response_data, status=status.HTTP_404_NOT_FOUND)
 
 #para un futuro detail del item de un proyecto, por ahora muestra todos
 class BudgetItemDetailAPIView(generics.RetrieveUpdateDestroyAPIView):

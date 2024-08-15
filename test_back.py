@@ -159,7 +159,6 @@ class UpdateProjectViewTest(APITestCase):
                 'project_budget': 12000,
                 'budget_items': []}
         response = self.client.put(url, data, format='json')
-        print(response.data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.client.credentials()
 
@@ -179,7 +178,6 @@ class UpdateNonExistingProjectViewTest(APITestCase):
                 'project_budget': 12000,
                 'budget_items': []}
         response = self.client.put(url, data, format='json')
-        print(response.data)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         self.client.credentials()
 
@@ -372,7 +370,8 @@ class InvalidCotizacionUpdateSolicitudViewTest(APITestCase):
                 tipo='Compra',
                 estado=self.estado,
                 proyecto=self.project,
-                usuario_creacion=self.user_profile)
+                usuario_creacion=self.user_profile,
+                usuario_modificacion=self.user_profile)
 
     def test_update_solicitud(self):
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + self.access_token)
