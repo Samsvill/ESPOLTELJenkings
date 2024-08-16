@@ -4,3 +4,4 @@ mysqlclient
 Flask
 djangorestframework-simplejwt
 python-dotenv
+behave-django

@@ -64,6 +64,7 @@ INSTALLED_APPS = [
     'proyecto',
     'user',
     'solicitud',
+    'behave_django'
 ]
 
 MIDDLEWARE = [
