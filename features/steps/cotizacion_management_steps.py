@@ -33,14 +33,14 @@ def step_impl(context):
     context.data = {
         "proveedor": "Proveedor de prueba",
         "monto": 1000.0,
-        "fecha_coti": "2021-06-01"
+        "fecha_coti": "01-06-2021",
     }
     context.response = context.client.post(context.url, context.data, format='json')
 
 # Then steps
 @then('the response status should be 201 for cotizacion')
 def step_impl(context):
-    assert status.HTTP_201_CREATED == status.HTTP_201_CREATED
+    assert context.response.status_code == status.HTTP_201_CREATED
 
 @when('I send a POST request to create a cotizacion with an invalid solicitud ID')
 def step_impl(context):
@@ -48,7 +48,7 @@ def step_impl(context):
     context.data = {
         "proveedor": "Proveedor de prueba",
         "monto": 1000.0,
-        "fecha_coti": "2021-06-01"
+        "fecha_coti": "01-06-2021"
     }
     context.response = context.client.post(context.url, context.data, format='json')
 
@@ -63,7 +63,7 @@ def step_impl(context):
     context.data = {
         "proveedor": "Proveedor de prueba",
         "monto": 1000.0,
-        "fecha_coti": "2021-06-01",
+        "fecha_coti": "01-06-2021",
         "solicitud": context.solicitud.id
     }
     context.response = context.client.post(context.url, context.data, format='json')
@@ -111,8 +111,3 @@ def step_impl(context):
 @then('the response status should be 401 for delete cotizacion')
 def step_impl(context):
     assert context.response.status_code == status.HTTP_401_UNAUTHORIZED
-
-
-
-
-

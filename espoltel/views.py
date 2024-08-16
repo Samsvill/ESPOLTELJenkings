@@ -4,6 +4,7 @@ from django.conf import settings
 from django.http import FileResponse, Http404, HttpResponse
 from urllib.parse import unquote
 from django.views.decorators.csrf import csrf_exempt
+from django.urls import reverse
 
 
 def download_file(request, path):
@@ -18,34 +19,26 @@ def download_file(request, path):
 
 #enlistar todas las rutas de la api en la vista home
 def home(request):
-    response = HttpResponse()
-    response.write("<h1>API de Espoltel</h1>")
-    response.write("<h2>Endpoints:</h2>")
-    response.write("<ul>")
-    response.write("<br><b>General:</b>")
-    response.write("<li><a href='/admin/'>/admin/</a> - Administración de la base de datos</li>")
-    response.write("<li><a href='/api/token/'>/api/token/</a> - Obtener token de autenticación</li>")
-    response.write("<li><a href='/api/token/refresh/'>/api/token/refresh/</a> - Refrescar token de autenticación</li>")
-    response.write("<br><b>Usuarios:</b>")
-    response.write("<li><a href='/user/registro/'>/user/registro/</a> - Registro de usuario</li>")
-    response.write("<li><a href='/user/rol/'>/user/rol/</a> - Asignar rol a usuario</li>")
-    response.write("<li><a href='/user/perfil/'>/user/perfil/</a> - Perfil del usuario autenticado</li>")
-    response.write("<li><a href='/user/perfil/1/'>/user/perfil/1/</a> - Perfil del usuario con ID 1</li>")
-    response.write("<br><b>Proyectos:</b>")
-    response.write("<li><a href='/api/proyectos/'>/api/proyectos/</a> - Listado de todos los proyectos</li>")
-    response.write("<li><a href='/api/proyectos/1/'>/api/proyectos/1/</a> - Detalle del proyecto con ID 1</li>")
-    response.write("<li><a href='/api/proyectos/1/items/'>/api/proyectos/1/items/</a> - Crear un item de presupuesto para el proyecto con ID 1</li>")
-    response.write("<br><b>Solicitudes:</b>")
-    response.write("<li><a href='/api/solicitudes/all/'>/api/solicitudes/all/</a> - Listado de todas las solicitudes</li>")
-    response.write("<li><a href='/api/solicitudes/1/'>/api/solicitudes/1/</a> - Detalle de la solicitud con ID 1</li>")
-    response.write("<li><a href='/api/solicitudes/'>/api/solicitudes/</a> - Listado de solicitudes del usuario autenticado</li>")
-    response.write("<li><a href='/api/solicitudes/1/cotizaciones/'>/api/solicitudes/1/cotizaciones/</a> - Listado de cotizaciones de la solicitud con ID 1</li>")
-    response.write("<br><b>Operaciones:</b>")
-    response.write("<li><a href='/api/proyectos/1/solicitud/'>/api/proyectos/1/solicitud/</a> - Crear una solicitud para el proyecto con ID 1</li>")
-    response.write("<li><a href='/api/proyecto/1/solicitud/1/estado/'>/api/proyecto/1/solicitud/1/estado/</a> - Listado de estados de la solicitud con ID 1 del proyecto con ID 1</li>")
-    response.write("<li><a href='/api/proyecto/1/solicitud/1/estado/1/'>/api/proyecto/1/solicitud/1/estado/1/</a> - Actualizar el estado con ID 1 de la solicitud con ID 1 del proyecto con ID 1</li>")
-    response.write("<li><a href='/api/formulario/1/'>/api/formulario/1/</a> - Crear un formulario para la solicitud con ID 1</li>")
-    response.write("<li><a href='/api/solicitud/1/factura/'>/api/solicitud/1/factura/</a> - Crear un detalle de factura para la solicitud con ID 1</li>")
-    response.write("<li><a href='/api/solicitudes/1/items/'>/api/solicitudes/1/items/</a> - Listado de items de la solicitud con ID 1</li>")
-    response.write("</ul>")
+    response = HttpResponse(content_type="text/plain")
+    
+    urls = [
+        ('registro', reverse('registro')),
+        ('get_token', reverse('get_token')),
+        ('roles', reverse('roles')),
+        ('roles-delete', reverse('roles-delete', kwargs={'pk': 1})),  # Example pk
+        ('proyecto-list-create', reverse('proyecto-list-create')),
+        ('proyecto-detail', reverse('proyecto-detail', kwargs={'pk': 1})),  # Example pk
+        ('crear-budget-items', reverse('crear-budget-items', kwargs={'proyecto_id': 1})),  # Example proyecto_id
+        ('crear-solicitud', reverse('crear-solicitud', kwargs={'pk': 1})),  # Example pk
+        ('detalle-solicitud', reverse('detalle-solicitud', kwargs={'pk': 1})),  # Example pk
+        ('cotizaciones-solicitud', reverse('cotizaciones-solicitud', kwargs={'pk': 1})),  # Example pk
+        ('crear-formulario', reverse('crear-formulario', kwargs={'pk_s': 1})),  # Example pk_s
+        ('crear-detalle-factura', reverse('crear-detalle-factura', kwargs={'pk_s': 1})),  # Example pk_s
+        ('crear-items-solicitud', reverse('crear-items-solicitud', kwargs={'pk_s': 1})),  # Example pk_s
+        ('estado-solicitud', reverse('estado-solicitud', kwargs={'pk_p': 1, 'pk_s': 1, 'pk_e': 1}))  # Example pk_p, pk_s, pk_e
+    ]
+    
+    for name, url in urls:
+        response.write(f"Name: {name} -> URL: {url}\n")
+
     return response

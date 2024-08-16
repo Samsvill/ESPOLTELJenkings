@@ -29,7 +29,7 @@ class CreateUserWithExistingUsernameViewTest(APITestCase):
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-# TC-103 Correct credentials
+# TC-201 Correct credentials
 class ValidTokenObtainPairViewTest(APITestCase):
     def setUp(self):
         self.user = User.objects.create_user(username='lcanarte', password='Jq23%aS@')
@@ -41,7 +41,7 @@ class ValidTokenObtainPairViewTest(APITestCase):
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-# TC-104 Incorrect credentials
+# TC-202 Incorrect credentials
 class InvalidTokenObtainPairViewTest(APITestCase):
     def setUp(self):
         self.user = User.objects.create_user(username='lcanarte', password='Jq23%aS@')
@@ -410,34 +410,34 @@ class CreateSolicitudWithoutTokenViewTest(APITestCase):
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
-# TC-801 POST request to create a cotizacion with valid solicitud id, all fields filled
-#class CreateCotizacionViewTest(APITestCase):
-#    def setUp(self):
-#        set_test_user(self)
-#        self.estado = Estado.objects.create(nombre='En revisión')
-#        self.project = Proyecto.objects.create(usuario_creacion=self.user_profile, nombre='Proyecto prueba',
-#                                               project_budget=10000)
-#        self.solicitud = Solicitud.objects.create(nombre='Solicitud de prueba',
-#                                                  tema='Probando',
-#                                                  tipo='Compra',
-#                                                  estado=self.estado,
-#                                                  proyecto=self.project,
-#                                                  usuario_creacion=self.user_profile,
-#                                                  usuario_modificacion=self.user_profile)
-#
-#    def test_create_cotizacion(self):
-#        self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + self.access_token)
-#        url = reverse('cotizaciones-solicitud', kwargs={'pk': self.solicitud.id})
-#        data = {
-#            "proveedor": "Proveedor de prueba",
-#            "monto": 1000.0,
-#            "fecha_coti": "2021-06-01"
-#        }
-#
-#        response = self.client.post(url, data, format='json')
-#        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-#        print(response.data)
-#        self.client.credentials()
+ #TC-801 POST request to create a cotizacion with valid solicitud id, all fields filled
+class CreateCotizacionViewTest(APITestCase):
+    def setUp(self):
+        set_test_user(self)
+        self.estado = Estado.objects.create(nombre='En revisión')
+        self.project = Proyecto.objects.create(usuario_creacion=self.user_profile, nombre='Proyecto prueba',
+                                               project_budget=10000)
+        self.solicitud = Solicitud.objects.create(nombre='Solicitud de prueba',
+                                                  tema='Probando',
+                                                  tipo='Compra',
+                                                  estado=self.estado,
+                                                  proyecto=self.project,
+                                                  usuario_creacion=self.user_profile,
+                                                  usuario_modificacion=self.user_profile)
+
+    def test_create_cotizacion(self):
+        self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + self.access_token)
+        url = reverse('cotizaciones-solicitud', kwargs={'pk': self.solicitud.id})
+        data = {
+            "proveedor": "Proveedor de prueba",
+            "monto": 1000.0,
+            "fecha_coti": "01-06-2021",
+        }
+
+        response = self.client.post(url, data, format='json')
+        self.client.credentials()
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        
 
 # TC-802 POST request to create a cotizacion with invalid solicitud id
 class CreateInvalidCotizacionViewTest(APITestCase):
