@@ -1,29 +1,32 @@
-Feature: Project management
+Feature: Project Management
 
-  Scenario: Create a new project
-    Given I am an authenticated user with a valid token
-    When I send a POST request to create a new project with valid data
-    Then the response status should be 201
+  Scenario: Create a project with valid data
+    Given I am a proyecto test client
+    And I have a valid user setup with project role
+    When I send a POST request to create a project with valid data
+    Then the response status should be 201 for project creation
 
   Scenario: Create a project with an existing name
-    Given I am an authenticated user with a valid token
-    And I have an existing project with the name "Proyecto prueba"
-    When I send a POST request to create a project with the same name
-    Then the response status should be 400
+    Given I am a proyecto test client
+    And I have a valid user setup with project role
+    And I have a project setup with an existing name
+    When I send a POST request to create a project with existing_name data
+    Then the response status should be 400 for project creation
 
   Scenario: Create a project without a token
-    Given I am an unauthenticated user
-    When I send a POST request to create a new project
-    Then the response status should be 401
+    Given I am a proyecto test client
+    And I have a valid user setup with project role
+    When I send a POST request to create a project without a token
+    Then the response status should be 401 for project creation
 
-  Scenario: Update a project with a valid ID
-    Given I am an authenticated user with a valid token
-    And I have an existing project with the ID 1
-    When I send a PUT request to update the project
-    Then the response status should be 200
+  Scenario: Update a project with valid data
+    Given I am a proyecto test client
+    And I have a valid user setup with project role
+    When I send a PUT request to update a project with valid data
+    Then the response status should be 200 for project update
 
   Scenario: Update a project with an invalid ID
-    Given I am an authenticated user with a valid token
-    And there is no project with ID 100
-    When I send a PUT request to update the project
-    Then the response status should be 404
+    Given I am a proyecto test client
+    And I have a valid user setup with project role
+    When I send a PUT request to update a project with invalid_id data
+    Then the response status should be 404 for project update

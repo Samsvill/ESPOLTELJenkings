@@ -1,47 +1,48 @@
 from behave import given, when, then
+from rest_framework.test import APIClient
 from django.urls import reverse
 from rest_framework import status
-from user.models import Role
+from user.models import Role, UserRole
+from base_cases import set_test_user
 
+# Given steps
+@given('I am a roles test client')
+def roles_test_client(context):
+    context.client = APIClient()
 
-@given('I am an authenticated user with a valid token')
-def step_impl(context):
+@given('I have a valid user setup for roles')
+def roles_setup_with_valid_user(context):
     set_test_user(context)
-    context.client.credentials(HTTP_AUTHORIZATION='Bearer ' + context.access_token)
 
-@when('I send a POST request to create a new role')
-def step_impl(context):
-    context.url = reverse('roles')
+@given('I have a role setup with an existing role')
+def roles_setup_with_existing_role(context):
+    context.role = Role.objects.create(description='PM')
+    UserRole.objects.create(user=context.user, role=context.role)
+
+# When steps
+@when('I send a POST request to create a role with valid data')
+def roles_create_with_valid_data(context):
     context.data = {'description': 'PM'}
-    context.response = context.client.post(context.url, context.data, format='json')
+    context.response = context.client.post(reverse('roles'), context.data, format='json')
 
-@then('the response status should be 201')
-def step_impl(context):
-    assert context.response.status_code == status.HTTP_201_CREATED
+@when('I send a DELETE request to delete an existing role')
+def roles_delete_existing(context):
+    context.response = context.client.delete(reverse('roles-delete', kwargs={'pk': context.role.id}))
 
-@given('I have an existing role with description "{description}"')
-def step_impl(context, description):
-    context.role = Role.objects.create(description=description)
+@when('I send a DELETE request to delete a non-existing role')
+def roles_delete_non_existing(context):
+    context.response = context.client.delete(reverse('roles-delete', kwargs={'pk': 100}))
 
-@when('I send a DELETE request to delete the role')
-def step_impl(context):
-    context.url = reverse('roles-delete', kwargs={'pk': context.role.id})
-    context.response = context.client.delete(context.url)
-
-@then('the response status should be 204')
-def step_impl(context):
-    assert context.response.status_code == status.HTTP_204_NO_CONTENT
-
-@given('there is no role with id {role_id}')
-def step_impl(context, role_id):
-    # Assuming role_id doesn't exist
-    context.role_id = role_id
-
-@when('I send a DELETE request to delete the role with non-existing id')
-def step_impl(context):
-    context.url = reverse('roles-delete', kwargs={'pk': context.role_id})
-    context.response = context.client.delete(context.url)
-
-@then('the response status should be 404')
-def step_impl(context):
-    assert context.response.status_code == status.HTTP_404_NOT_FOUND
+# Then steps
+@then('the response status should be {status_code} for role {action}')
+def roles_verify_status_code(context, status_code, action):
+    expected_status = {
+        "creation": {
+            "201": status.HTTP_201_CREATED
+        },
+        "deletion": {
+            "204": status.HTTP_204_NO_CONTENT,
+            "404": status.HTTP_404_NOT_FOUND
+        }
+    }
+    assert context.response.status_code == expected_status[action][status_code]
